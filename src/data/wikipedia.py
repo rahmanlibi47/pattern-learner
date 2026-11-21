@@ -1,5 +1,6 @@
 
 import json
+import os
 import re
 from html.parser import HTMLParser
 from urllib.error import HTTPError, URLError
@@ -10,9 +11,9 @@ from urllib.request import Request, urlopen
 API_BASE = "https://en.wikipedia.org/w/rest.php/v1"
 
 # Replace this with your actual GitHub repository URL.
-USER_AGENT = (
-    "PatternLearner/0.1 "
-    "(https://github.com/YOUR_USERNAME/pattern-learner)"
+USER_AGENT = os.getenv(
+    "WIKIPEDIA_USER_AGENT",
+    "PatternLearner/0.2 (self-hosted educational research project)",
 )
 
 

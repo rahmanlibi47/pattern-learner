@@ -242,3 +242,15 @@ logs/
 # Local environment configuration
 .env.*
 !.env.example
+# Pattern Learner runtime data (persisted in Docker named volume)
+storage/
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+
+# Frontend dependencies and build output
+gui/node_modules/
+gui/dist/
+
+# Docker-generated and local test output
+.DS_Store

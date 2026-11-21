@@ -1,0 +1,62 @@
+name: pattern-learner
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      DATABASE_PATH: /app/storage/pattern_learner.sqlite3
+      STORAGE_DIR: /app/storage
+    volumes:
+      - pattern-data:/app/storage
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  trainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "-m", "src.training.worker"]
+    environment:
+      DATABASE_PATH: /app/storage/pattern_learner.sqlite3
+      STORAGE_DIR: /app/storage
+      TRAINING_EPOCHS: ${TRAINING_EPOCHS:-20}
+      BATCH_SIZE: ${BATCH_SIZE:-128}
+      LEARNING_RATE: ${LEARNING_RATE:-0.003}
+      CONTEXT_SIZE: ${CONTEXT_SIZE:-8}
+      EMBEDDING_DIM: ${EMBEDDING_DIM:-2}
+      HIDDEN_SIZE: ${HIDDEN_SIZE:-8}
+      MAX_PARAMETERS: ${MAX_PARAMETERS:-1000}
+      PROMOTION_MAX_REGRESSION: ${PROMOTION_MAX_REGRESSION:-0.02}
+      DISCOVERY_INTERVAL_SECONDS: ${DISCOVERY_INTERVAL_SECONDS:-1800}
+      WIKIPEDIA_USER_AGENT: ${WIKIPEDIA_USER_AGENT:-PatternLearner/0.2 (self-hosted educational research project)}
+    volumes:
+      - pattern-data:/app/storage
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    stop_grace_period: 30s
+
+  gui:
+    build:
+      context: ./gui
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pattern-data:

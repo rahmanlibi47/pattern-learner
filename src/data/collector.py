@@ -94,6 +94,22 @@ def fetch_with_retries(title: str) -> dict | None:
     return None
 
 
+def is_relevant_title(title: str, topic: str) -> bool:
+    """Avoid obvious search-result noise such as albums and journals."""
+    normalized = title.casefold()
+    excluded_terms = (
+        "(disambiguation)", "(journal)", "journal", "album", "soundtrack",
+        "film", "song", "single", "novel", "book i", "book ii",
+    )
+    if any(term in normalized for term in excluded_terms):
+        return False
+    topic_terms = set(topic.casefold().split())
+    title_terms = set(normalized.replace("(", " ").replace(")", " ").split())
+    # Accept exact topic matches, titles containing the topic, and specific
+    # encyclopedia subtopics whose title includes the topic in parentheses.
+    return bool(topic_terms & title_terms) or normalized == topic.casefold()
+
+
 def has_accepted_license(article: dict) -> bool:
     """Accept recognized Creative Commons BY-SA article licenses."""
 
@@ -116,6 +132,7 @@ def collect_articles(
     min_chars: int = 500,
     max_article_chars: int = 5_000,
     max_per_topic: int = 2,
+    on_article=None,
 ) -> list[dict]:
     """
     Discover and collect diverse Wikipedia articles in memory.
@@ -164,8 +181,8 @@ def collect_articles(
                 continue
 
             # Exclude Wikipedia disambiguation pages.
-            if "(disambiguation)" in normalized_title:
-                print(f"Skipping disambiguation: {title}")
+            if not is_relevant_title(title, topic):
+                print(f"Skipping unrelated search result: {title}")
                 continue
 
             seen_titles.add(normalized_title)
@@ -220,6 +237,8 @@ def collect_articles(
             }
 
             articles.append(collected)
+            if on_article is not None:
+                on_article(collected)
 
             total_chars += len(text)
             topic_count += 1
