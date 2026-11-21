@@ -221,3 +221,24 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+# Pattern Learner - generated model checkpoints
+artifacts/*.npz
+artifacts/*.pkl
+artifacts/*.joblib
+
+# Generated/downloaded datasets
+data/raw/
+data/processed/
+
+# Generated text collections
+data/*.jsonl
+
+# Logs
+logs/
+*.log
+
+# Local environment configuration
+.env.*
+!.env.example
