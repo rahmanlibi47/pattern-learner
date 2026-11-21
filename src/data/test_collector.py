@@ -2,21 +2,22 @@
 from src.data.collector import collect_articles
 
 articles = collect_articles(
-    topics=["science", "nature", "technology"],
-    max_articles=5,
-    max_chars=15_000,
+    max_articles=15,
+    max_chars=50_000,
+    max_article_chars=5_000,
+    max_per_topic=2,
 )
 
 print("\nARTICLE SUMMARY")
-print("=" * 40)
+print("=" * 50)
 
 for article in articles:
     print(f"\nTitle: {article['title']}")
+    print(f"Topic: {article['topic']}")
     print(f"Characters: {len(article['text'])}")
     print(f"License: {article['license']}")
     print(f"URL: {article['url']}")
 
-if articles:
-    print("\nSAMPLE TEXT")
-    print("=" * 40)
-    print(articles[0]["text"][:500])
+print("\nTOTAL CHARACTERS:", sum(
+    len(article["text"]) for article in articles
+))

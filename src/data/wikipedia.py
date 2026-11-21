@@ -36,12 +36,19 @@ class ArticleParser(HTMLParser):
     }
 
     SKIP_CLASSES = {
-        "mw-editsection",
-        "navbox",
-        "metadata",
-        "ambox",
-        "reflist",
-    }
+    "mw-editsection",
+    "navbox",
+    "vertical-navbox",
+    "sidebar",
+    "metadata",
+    "ambox",
+    "reflist",
+    "hatnote",
+    "shortdescription",
+    "catlinks",
+    "toc",
+    "sistersitebox",
+}
 
     def __init__(self):
         super().__init__()
@@ -111,7 +118,7 @@ def fetch_article(title: str) -> dict:
     )
 
     try:
-        with urlopen(request, timeout=20) as response:
+        with urlopen(request, timeout=45) as response:
             data = json.loads(response.read().decode("utf-8"))
 
     except HTTPError as error:
@@ -131,5 +138,7 @@ def fetch_article(title: str) -> dict:
         "title": data["title"],
         "text": parser.get_text(),
         "license": data.get("license"),
-        "url": data.get("html_url"),
+        "url": data.get("html_url") or (
+    f"https://en.wikipedia.org/wiki/{encoded_title}"
+),
     }
